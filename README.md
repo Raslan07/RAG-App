@@ -39,3 +39,15 @@ $ cp .env.example .env
 ```
 
 Set your environment variables in the `.env` file. Like `OPENAI_API_KEY` value.
+
+
+## Run the FastAPI server
+
+```bash
+$ uv run fastapi dev main.py
+```
+
+
+## POSTMAN Collection
+
+Download the POSTMAN collection from [/assets/My Collection.postman_collection.json](/assets/My Collection.postman_collection.json)
