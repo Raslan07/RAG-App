@@ -43,9 +43,15 @@ async def upload_data(project_id: str, file: UploadFile, app_settings: Settings 
     project_dir_path = ProjectController().get_project_path(project_id=project_id)
 
     # 2. Build the unique save path (also creates the project folder if needed)
-    file_path = data_controller.generate_unique_filename(original_filename=file.filename, project_id=project_id)
-    if isinstance(file_path, JSONResponse):
-        return file_path
+    generated_filename = data_controller.generate_unique_filepath(
+        original_filename=file.filename, 
+        project_id=project_id
+        )
+    
+    if isinstance(generated_filename, JSONResponse):
+        return generated_filename
+
+    file_path, file_id = generated_filename
 
     # 3. Stream to disk chunk by chunk so large files never sit fully in memory
     try:
@@ -61,5 +67,7 @@ async def upload_data(project_id: str, file: UploadFile, app_settings: Settings 
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={"signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value}
+        content={
+            "signal": ResponseSignal.FILE_UPLOAD_SUCCESS.value ,
+            "file_id": file_id}
     )

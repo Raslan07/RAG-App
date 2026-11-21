@@ -35,7 +35,7 @@ class DataController(BaseController):
 
         return True, ResponseSignal.FILE_VALIDATION_SUCCESS.value
 
-    def generate_unique_filename(self, original_filename: str, project_id: str):
+    def generate_unique_filepath(self, original_filename: str, project_id: str):
         """Compute the full save path for a file inside its project folder.
 
         Regenerates the random prefix until the path does not exist on disk,
@@ -56,7 +56,7 @@ class DataController(BaseController):
                 status_code=500,
                 content={"signal": ResponseSignal.FILE_GENERATION_ERROR.value}
             )
-        return new_file_path
+        return new_file_path , random_filename + "_" + cleaned_filename
 
     def get_clean_filename(self, original_filename: str) -> str:
         """Replace path-unsafe characters with '_' so the name is safe on disk."""
