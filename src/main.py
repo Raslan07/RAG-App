@@ -1,7 +1,4 @@
 from fastapi import FastAPI
-
-# load_dotenv is used to load environment variables from a .env file into the application. This allows you to manage configuration settings (like app name and version) in a separate file, making it easier to change these settings without modifying the code directly.
-
 from routes import base , data
 
 app = FastAPI()
