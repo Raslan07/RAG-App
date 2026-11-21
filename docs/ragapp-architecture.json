@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "RagApp — FastAPI file upload architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [1380, 1000]
+  },
+  "components": [
+    { "id": "client", "type": "external", "label": "Client", "sublabel": "browser / HTTP", "pos": [40, 444], "size": [150, 72] },
+    { "id": "app", "type": "backend", "label": "FastAPI app", "sublabel": "src/main.py", "pos": [250, 444], "size": [150, 72] },
+    { "id": "base_route", "type": "backend", "label": "base_router", "sublabel": "GET /api/v1/", "pos": [490, 90], "size": [170, 84] },
+    { "id": "data_route", "type": "backend", "label": "data_router", "sublabel": "POST /api/v1/data/upload/{project_id}", "pos": [490, 444], "size": [210, 84] },
+    { "id": "settings", "type": "backend", "label": "Settings", "sublabel": "pydantic .env config", "pos": [1140, 90], "size": [190, 84] },
+    { "id": "data_controller", "type": "backend", "label": "DataController", "sublabel": "validate + unique name", "pos": [760, 240], "size": [180, 84] },
+    { "id": "base_controller", "type": "backend", "label": "BaseController", "sublabel": "file_dir + random string", "pos": [1140, 240], "size": [190, 84] },
+    { "id": "project_controller", "type": "backend", "label": "ProjectController", "sublabel": "project directory", "pos": [760, 444], "size": [180, 84] },
+    { "id": "storage", "type": "database", "label": "assets/files", "sublabel": "disk / per-project folders", "pos": [760, 820], "size": [180, 84] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "src/", "wraps": ["app", "base_route", "data_route", "settings", "data_controller", "base_controller", "project_controller"], "pad": 26 }
+  ],
+  "connections": [
+    { "from": "client", "to": "app", "label": "HTTP", "variant": "emphasis" },
+    { "from": "app", "to": "base_route", "label": "mount /api/v1", "variant": "dashed", "fromSide": "top", "toSide": "left", "via": [[325, 132]], "labelDx": -14, "labelDy": 70 },
+    { "from": "app", "to": "data_route", "label": "mount /api/v1/data", "variant": "dashed", "labelAt": [440, 560] },
+    { "from": "base_route", "to": "settings", "label": "Depends(get_settings)" },
+    { "from": "data_route", "to": "data_controller", "label": "validate + unique filename", "fromSide": "right", "toSide": "left", "via": [[715, 486], [715, 282]], "labelDy": 16 },
+    { "from": "data_route", "to": "project_controller", "label": "get_project_path()", "fromSide": "right", "toSide": "left", "labelAt": [660, 427] },
+    { "from": "data_route", "to": "storage", "label": "aiofiles chunked write", "fromSide": "right", "toSide": "left", "via": [[715, 486], [715, 862]], "labelDx": -80, "labelDy": 4 },
+    { "from": "data_controller", "to": "project_controller", "label": "get_project_path()", "fromSide": "bottom", "toSide": "top", "labelAt": [930, 392] },
+    { "from": "data_controller", "to": "base_controller", "label": "inherits", "variant": "dashed", "fromSide": "right", "toSide": "left" },
+    { "from": "project_controller", "to": "base_controller", "label": "inherits", "variant": "dashed", "fromSide": "top", "toSide": "bottom", "via": [[850, 375], [1235, 375]], "labelDx": 60 },
+    { "from": "project_controller", "to": "storage", "label": "makedirs, returns dir", "fromSide": "bottom", "toSide": "top", "labelAt": [930, 700] },
+    { "from": "base_controller", "to": "storage", "label": "defines file_dir", "variant": "dashed", "fromSide": "bottom", "toSide": "bottom", "via": [[1235, 940], [850, 940]] }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "BaseController — shared foundation",
+      "items": [
+        "Loads Settings (.env) once in __init__",
+        "Derives file_dir = src/assets/files",
+        "generate_random_string() builds the 8-char random prefix"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "DataController — validation & naming",
+      "items": [
+        "Inherits Settings, file_dir, random string from BaseController",
+        "validate_uploaded_file(): MIME type + max-size checks",
+        "generate_unique_filename(): regenerates until the filename is free on disk",
+        "Delegates to ProjectController.get_project_path() for the target folder"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "ProjectController — storage layout",
+      "items": [
+        "Inherits file_dir from BaseController",
+        "get_project_path(): joins file_dir with project_id",
+        "Creates the project folder if missing, then returns its path"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Upload path",
+      "items": [
+        "POST /api/v1/data/upload/{project_id} — project_id from the URL prefix",
+        "Route orchestrates: validate, name, then write chunks with aiofiles",
+        "Both routers inject the same Settings via Depends(get_settings)",
+        "All responses return ResponseSignal enum text as {\"signal\": ...}"
+      ]
+    }
+  ]
+}
