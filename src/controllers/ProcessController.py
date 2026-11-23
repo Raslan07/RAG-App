@@ -41,9 +41,9 @@ class ProcessController(BaseController):
             length_function=len
         )
 
-        file_content_texts = [
+        file_content_texts =[
             rec.page_content
-            for rec in file_content:
+            for rec in file_content
         ]
 
         file_content_metadata =[
