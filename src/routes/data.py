@@ -84,6 +84,17 @@ async def process_endpoint(project_id: str, request: ProcessRequest):
     file_id = request.file_id
     chunk_size = request.chunk_size
     overlap_size = request.overlap_size
+    if chunk_size is None:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"signal": ResponseSignal.PROCESSING_FAILED.value}
+        )
+    if overlap_size is None:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"signal": ResponseSignal.PROCESSING_FAILED.value}
+            )
+
     process_controller = ProcessController(project_id=project_id)
     file_content = process_controller.get_file_content(file_id=file_id)
     file_chunks = process_controller.process_file_content(
