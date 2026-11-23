@@ -8,3 +8,6 @@ class ResponseSignal(Enum):
     FILE_UPLOAD_SUCCESS = "Successfully uploaded the file."
     FILE_FAILURE_SUCCESS = "Failed to upload the file."
     FILE_GENERATION_ERROR = "Error occurred while generating a unique filename."
+    FILE_PROCESSING_TRIGGERED = "File processing has been triggered."
+    PROCESSING_SUCCESS = "processing_sucess"
+    PROCESSING_FAILED = "processing_failed"
