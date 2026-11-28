@@ -1,0 +1,76 @@
+{
+  "fastapi": {
+    "source": "svgl",
+    "url": "https://svgl.app/library/fastapi.svg",
+    "file": "fastapi.svg",
+    "bytes": 280
+  },
+  "python": {
+    "source": "svgl",
+    "url": "https://svgl.app/library/python.svg",
+    "file": "python.svg",
+    "bytes": 1126
+  },
+  "mongodb": {
+    "source": "svgl",
+    "url": "https://svgl.app/library/mongodb-icon-light.svg",
+    "file": "mongodb.svg",
+    "bytes": 518,
+    "dark_file": "mongodb_dark.svg",
+    "dark_url": "https://svgl.app/library/mongodb-icon-dark.svg"
+  },
+  "langchain": {
+    "source": "svgl",
+    "url": "https://svgl.app/library/langchain-logo.svg",
+    "file": "langchain.svg",
+    "bytes": 491
+  },
+  "disk": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/hard-drive.svg",
+    "file": "disk.svg",
+    "bytes": 537
+  },
+  "schemas": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/database.svg",
+    "file": "schemas.svg",
+    "bytes": 405
+  },
+  "client": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/globe.svg",
+    "file": "client.svg",
+    "bytes": 404
+  },
+  "config": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/settings.svg",
+    "file": "config.svg",
+    "bytes": 662
+  },
+  "splitter": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/scissors.svg",
+    "file": "splitter.svg",
+    "bytes": 447
+  },
+  "folder": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/folder.svg",
+    "file": "folder.svg",
+    "bytes": 416
+  },
+  "datactrl": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/files.svg",
+    "file": "datactrl.svg",
+    "bytes": 517
+  },
+  "route": {
+    "source": "lucide",
+    "url": "https://cdn.jsdelivr.net/npm/lucide-static/icons/route.svg",
+    "file": "route.svg",
+    "bytes": 404
+  }
+}

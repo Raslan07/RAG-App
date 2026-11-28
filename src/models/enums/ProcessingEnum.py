@@ -6,5 +6,5 @@ class ProcessingEnum(Enum):
     """
     Enum class for processing types.
     """
-    TEXT = "text"
-    PDF = "pdf"
+    TEXT = ".txt"
+    PDF = ".pdf"

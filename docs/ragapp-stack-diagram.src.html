@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RagApp — mini-rag upload &amp; chunking</title>
+<style>
+:root {
+  color-scheme: light;
+  --color-paper:   oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96.5% 0.005 252);
+  --color-rule:    oklch(93% 0.007 255);
+  --color-rule-2:  oklch(83% 0.011 255);
+  --color-muted:   oklch(56% 0.013 255);
+  --color-neutral: oklch(46% 0.015 255);
+  --color-ink-2:   oklch(34% 0.018 257);
+  --color-ink:     oklch(24% 0.020 258);
+  --color-accent:  oklch(58% 0.20 256);
+  --color-graphite:oklch(24% 0.018 260);
+  --ga-tint: oklch(96% 0.03 250 / 0.5);
+  --ga-line: oklch(80% 0.04 250 / 0.55);
+  --gb-tint: oklch(96% 0.025 160 / 0.45);
+  --gb-line: oklch(82% 0.04 160 / 0.5);
+  --font-display: "Geist", "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --space-lg: 24px;
+  --space-md: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--color-paper); color: var(--color-ink); font-family: var(--font-display); }
+.page { max-width: 1060px; margin: 0 auto; padding: var(--space-lg); }
+.kicker { font: 600 11px/1.2 var(--font-mono); color: var(--color-accent); text-transform: uppercase; letter-spacing: .06em; }
+h1 { font-size: 23px; font-weight: 700; margin-top: 6px; }
+.lede { color: var(--color-ink-2); font-size: 13px; margin-top: 8px; max-width: 660px; line-height: 1.5; }
+.scroller { overflow-x: auto; padding: var(--space-lg) 0 var(--space-md); }
+.canvas {
+  position: relative; width: 1000px; height: 1120px; margin: 0 auto;
+  background-color: var(--color-paper-2);
+  background-image:
+    linear-gradient(var(--color-rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-rule) 1px, transparent 1px);
+  background-size: 28px 28px;
+  border: 1px solid var(--color-rule-2);
+  border-radius: 10px;
+}
+.group { position: absolute; border: 1px solid var(--ga-line); background: var(--ga-tint); border-radius: 8px; }
+.group.gb { border-color: var(--gb-line); background: var(--gb-tint); }
+.g-label { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px;
+  font: 600 10px var(--font-mono); color: var(--color-neutral); letter-spacing: .04em; }
+.g-label img { width: 14px; height: 14px; }
+.node { position: absolute; width: 132px; text-align: center; }
+.tile { width: 60px; height: 60px; margin: 0 auto; background: #fff; border: 1px solid var(--color-rule-2);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.tile.dark { background: var(--color-graphite); }
+.tile img { width: 38px; height: 38px; }
+.name { margin-top: 8px; font: 600 13px var(--font-display); }
+.name span, .role span { background: var(--color-paper-2); padding: 0 3px; }
+.role { font: 400 10px var(--font-mono); color: var(--color-muted); margin-top: 2px; }
+svg.edges { position: absolute; inset: 0; width: 1000px; height: 1120px; pointer-events: none; }
+.e { fill: none; stroke: var(--color-accent); stroke-width: 1.6; }
+.n { fill: none; stroke: var(--color-neutral); stroke-width: 1.3; }
+.dash { stroke-dasharray: 5 4; }
+.el { font: 500 9.5px var(--font-mono); fill: var(--color-neutral); paint-order: stroke;
+  stroke: var(--color-paper-2); stroke-width: 3px; letter-spacing: .04em; }
+.el.a { fill: var(--color-accent); }
+.legend { display: flex; gap: var(--space-lg); align-items: center; margin-top: var(--space-md);
+  font: 500 11px var(--font-mono); color: var(--color-ink-2); }
+.legend .sw { display: inline-block; width: 30px; vertical-align: middle; margin-right: 6px;
+  border-top: 1.6px solid var(--color-accent); }
+.legend .sw.n { border-color: var(--color-neutral); border-top-width: 1.4px; }
+.legend .sw.dash { border-top-style: dashed; }
+.foot { display: flex; justify-content: space-between; margin-top: var(--space-md);
+  font: 400 10px var(--font-mono); color: var(--color-muted); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="head">
+    <div>
+      <div class="kicker">stack-diagram · RagApp · 2026-11</div>
+      <h1>mini-rag — FastAPI upload &amp; chunking pipeline</h1>
+    </div>
+    <p class="lede">Request flow through the API and the controller dependency chain, the
+    LangChain load/split pipeline, and the two storage targets: the local file store and MongoDB.</p>
+  </header>
+
+  <div class="scroller">
+  <div class="canvas">
+
+    <!-- GROUPS -->
+    <div class="group gb" style="left:22px; top:330px; width:750px; height:260px;">
+      <div class="g-label"><img src="%%ICON_python%%" alt="">Controllers · src/controllers</div>
+    </div>
+    <div class="group" style="left:212px; top:870px; width:560px; height:210px;">
+      <div class="g-label"><img src="%%ICON_mongodb%%" alt="">Storage</div>
+    </div>
+
+    <!-- EDGES -->
+    <svg class="edges" viewBox="0 0 1000 1120" aria-hidden="true">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/>
+        </marker>
+      </defs>
+
+      <!-- row 0 -->
+      <path class="e" d="M146 138 H266" marker-end="url(#ar)"/>
+      <text class="el a" x="206" y="130" text-anchor="middle">HTTP</text>
+      <path class="e" d="M336 138 H456" marker-end="url(#ar)"/>
+      <text class="el a" x="396" y="130" text-anchor="middle">mounts</text>
+      <path class="e" d="M302 212 V250 H668 V212" marker-end="url(#ar)"/>
+      <text class="el a" x="492" y="242" text-anchor="middle">mounts</text>
+
+      <!-- row 0 -> row 1 -->
+      <path class="e" d="M682 212 V384" marker-end="url(#ar)"/>
+      <text class="el a" x="690" y="300" text-anchor="start">process</text>
+      <path class="e" d="M650 212 V320 H302 V384" marker-end="url(#ar)"/>
+      <text class="el a" x="476" y="312" text-anchor="middle">upload</text>
+
+      <!-- controller internals -->
+      <path class="n dash" d="M268 420 H146" marker-end="url(#ar)"/>
+      <text class="el" x="207" y="412" text-anchor="middle">inherits</text>
+      <path class="n dash" d="M492 490 V556 H150 V494" marker-end="url(#ar)"/>
+      <path class="n dash" d="M682 490 V572 H170 V494" marker-end="url(#ar)"/>
+      <path class="n dash" d="M650 420 H526" marker-end="url(#ar)"/>
+      <text class="el" x="588" y="412" text-anchor="middle">project path</text>
+
+      <!-- pipeline -->
+      <path class="e" d="M650 494 V620 H500 V656" marker-end="url(#ar)"/>
+      <text class="el a" x="575" y="612" text-anchor="middle">read file</text>
+      <path class="n dash" d="M112 656 V494" marker-end="url(#ar)"/>
+      <text class="el" x="120" y="600" text-anchor="start">loads .env</text>
+
+      <!-- models / storage -->
+      <path class="n dash" d="M492 764 V830 H660 V926" marker-end="url(#ar)"/>
+      <text class="el" x="576" y="822" text-anchor="middle">chunks</text>
+      <path class="n dash" d="M682 764 V926" marker-end="url(#ar)"/>
+      <text class="el" x="690" y="840" text-anchor="start">schemes</text>
+      <path class="n" d="M302 494 V926" marker-end="url(#ar)"/>
+      <text class="el" x="310" y="700" text-anchor="start">writes file</text>
+      <path class="n" d="M460 494 V860 H318 V926" marker-end="url(#ar)"/>
+      <text class="el" x="390" y="852" text-anchor="middle">mkdir</text>
+      <path class="n dash" d="M332 104 V70 H800 V860 H708 V926" marker-end="url(#ar)"/>
+      <text class="el" x="808" y="480" text-anchor="start">motor client</text>
+    </svg>
+
+    <!-- NODES -->
+    <div class="node" style="left:46px;top:108px">
+      <div class="tile"><img src="%%ICON_client%%" alt=""></div>
+      <div class="name"><span>Client</span></div><div class="role"><span>http caller</span></div>
+    </div>
+    <div class="node" style="left:236px;top:108px">
+      <div class="tile"><img src="%%ICON_fastapi%%" alt=""></div>
+      <div class="name"><span>FastAPI app</span></div><div class="role"><span>main.py · lifespan</span></div>
+    </div>
+    <div class="node" style="left:426px;top:108px">
+      <div class="tile"><img src="%%ICON_route%%" alt=""></div>
+      <div class="name"><span>base_router</span></div><div class="role"><span>GET /api/v1/</span></div>
+    </div>
+    <div class="node" style="left:616px;top:108px">
+      <div class="tile"><img src="%%ICON_route%%" alt=""></div>
+      <div class="name"><span>data_router</span></div><div class="role"><span>/api/v1/data/*</span></div>
+    </div>
+
+    <div class="node" style="left:46px;top:390px">
+      <div class="tile"><img src="%%ICON_config%%" alt=""></div>
+      <div class="name"><span>BaseController</span></div><div class="role"><span>settings · file_dir</span></div>
+    </div>
+    <div class="node" style="left:236px;top:390px">
+      <div class="tile"><img src="%%ICON_datactrl%%" alt=""></div>
+      <div class="name"><span>DataController</span></div><div class="role"><span>validate · paths</span></div>
+    </div>
+    <div class="node" style="left:426px;top:390px">
+      <div class="tile"><img src="%%ICON_folder%%" alt=""></div>
+      <div class="name"><span>ProjectController</span></div><div class="role"><span>project folders</span></div>
+    </div>
+    <div class="node" style="left:616px;top:390px">
+      <div class="tile"><img src="%%ICON_splitter%%" alt=""></div>
+      <div class="name"><span>ProcessController</span></div><div class="role"><span>load · split</span></div>
+    </div>
+
+    <div class="node" style="left:46px;top:660px">
+      <div class="tile"><img src="%%ICON_config%%" alt=""></div>
+      <div class="name"><span>Settings</span></div><div class="role"><span>.env · pydantic</span></div>
+    </div>
+    <div class="node" style="left:426px;top:660px">
+      <div class="tile"><img src="%%ICON_langchain%%" alt=""></div>
+      <div class="name"><span>LangChain</span></div><div class="role"><span>TextLoader · PyMuPDF</span></div>
+    </div>
+    <div class="node" style="left:616px;top:660px">
+      <div class="tile"><img src="%%ICON_schemas%%" alt=""></div>
+      <div class="name"><span>Model layer</span></div><div class="role"><span>Project · DataChunk</span></div>
+    </div>
+
+    <div class="node" style="left:236px;top:930px">
+      <div class="tile"><img src="%%ICON_disk%%" alt=""></div>
+      <div class="name"><span>File store</span></div><div class="role"><span>assets/files/&lt;pid&gt;</span></div>
+    </div>
+    <div class="node" style="left:616px;top:930px">
+      <div class="tile"><img src="%%ICON_mongodb%%" alt=""></div>
+      <div class="name"><span>MongoDB</span></div><div class="role"><span>projects · chunks</span></div>
+    </div>
+
+  </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw"></span>request path</span>
+    <span><span class="sw n"></span>internal / storage</span>
+    <span><span class="sw n dash"></span>inheritance / not yet wired</span>
+  </div>
+
+  <div class="foot">
+    <span>RagApp · mini-rag 1.0.0 · FastAPI + LangChain + MongoDB</span>
+    <span>icons: svgl / Lucide · made with <a href="https://github.com/caru-ini/stack-diagram" target="_blank" rel="noopener">stack-diagram</a></span>
+  </div>
+
+</div>
+</body>
+</html>
